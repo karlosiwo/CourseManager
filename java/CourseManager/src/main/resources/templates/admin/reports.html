@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Raporty</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
 </head>
-<body>
-
+<body class="container mt-4">
+<h2 th:text="${reportTitle}"></h2>
+<p th:text="${reportData}"></p>
+<a href="/admin/users" class="btn btn-secondary">Zarządzanie użytkownikami</a>
+<a href="/courses" class="btn btn-secondary">Strona główna</a>
 </body>
 </html>

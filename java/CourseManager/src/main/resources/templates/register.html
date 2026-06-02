@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
 </head>
-<body>
-
+<body class="container mt-5">
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h2>Rejestracja</h2>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <form th:action="@{/register}" th:object="${user}" method="post">
+            <div class="mb-3">
+                <input type="text" th:field="*{username}" class="form-control" placeholder="Login">
+                <div th:errors="*{username}" class="text-danger"></div>
+            </div>
+            <div class="mb-3">
+                <input type="password" th:field="*{password}" class="form-control" placeholder="Hasło">
+                <div th:errors="*{password}" class="text-danger"></div>
+            </div>
+            <div class="mb-3">
+                <input type="email" th:field="*{email}" class="form-control" placeholder="Email">
+                <div th:errors="*{email}" class="text-danger"></div>
+            </div>
+            <button type="submit" class="btn btn-success">Zarejestruj</button>
+        </form>
+        <p class="mt-3"><a href="/login">Masz już konto? Zaloguj się</a></p>
+    </div>
+</div>
 </body>
 </html>

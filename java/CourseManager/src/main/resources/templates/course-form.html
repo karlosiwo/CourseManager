@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Formularz kursu</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+<h2>Dodaj/Edytuj kurs</h2>
+<form th:action="${courseDto.id != null ? '/courses/edit/' + courseDto.id : '/courses/new'}" th:object="${courseDto}" method="post">
+    <div class="mb-3">
+        <label>Tytuł</label>
+        <input type="text" th:field="*{title}" class="form-control">
+        <div th:errors="*{title}" class="text-danger"></div>
+    </div>
+    <div class="mb-3">
+        <label>Opis</label>
+        <textarea th:field="*{description}" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Data rozpoczęcia</label>
+        <input type="date" th:field="*{startDate}" class="form-control">
+        <div th:errors="*{startDate}" class="text-danger"></div>
+    </div>
+    <div class="mb-3">
+        <label>Maksymalna liczba miejsc</label>
+        <input type="number" th:field="*{maxSeats}" class="form-control">
+        <div th:errors="*{maxSeats}" class="text-danger"></div>
+    </div>
+    <div class="mb-3">
+        <label>Kategoria</label>
+        <select th:field="*{categoryId}" class="form-control">
+            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Prowadzący</label>
+        <select th:field="*{instructorId}" class="form-control">
+            <option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.firstName + ' ' + ins.lastName}"></option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+    <a href="/courses" class="btn btn-secondary">Anuluj</a>
+</form>
+</body>
+</html>
