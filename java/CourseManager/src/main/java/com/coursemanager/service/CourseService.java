@@ -1,11 +1,9 @@
 package com.coursemanager.service;
 
 import com.coursemanager.dto.CourseDto;
-import com.coursemanager.model.entity.Category;
 import com.coursemanager.model.entity.Course;
-import com.coursemanager.model.entity.Instructor;
 import com.coursemanager.repository.CourseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -15,16 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
-
-    @Autowired
-    private CourseRepository courseRepository;
-
-    @Autowired
-    private CategoryService categoryService;
-
-    @Autowired
-    private InstructorService instructorService;
+    private final CourseRepository courseRepository;
+    private final CategoryService categoryService;
+    private final InstructorService instructorService;
 
     public List<Course> findAllCourses(String sortBy, String direction, String categoryName, LocalDate fromDate) {
         Sort.Direction dir = direction != null && direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -53,10 +46,8 @@ public class CourseService {
         course.setDescription(courseDto.getDescription());
         course.setStartDate(courseDto.getStartDate());
         course.setMaxSeats(courseDto.getMaxSeats());
-        Category category = categoryService.findById(courseDto.getCategoryId());
-        course.setCategory(category);
-        Instructor instructor = instructorService.findById(courseDto.getInstructorId());
-        course.setInstructor(instructor);
+        course.setCategory(categoryService.findById(courseDto.getCategoryId()));
+        course.setInstructor(instructorService.findById(courseDto.getInstructorId()));
         courseRepository.save(course);
     }
 

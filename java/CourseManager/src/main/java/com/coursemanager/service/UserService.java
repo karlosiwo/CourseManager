@@ -3,6 +3,7 @@ package com.coursemanager.service;
 import com.coursemanager.dto.UserRegistrationDto;
 import com.coursemanager.model.entity.User;
 import com.coursemanager.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,15 +14,10 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

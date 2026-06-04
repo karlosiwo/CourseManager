@@ -1,10 +1,14 @@
 package com.coursemanager.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CourseDto {
     private Long id;
 

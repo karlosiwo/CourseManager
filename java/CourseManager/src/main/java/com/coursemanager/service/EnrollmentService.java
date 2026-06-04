@@ -5,20 +5,17 @@ import com.coursemanager.model.entity.Course;
 import com.coursemanager.model.entity.Enrollment;
 import com.coursemanager.model.entity.User;
 import com.coursemanager.repository.EnrollmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EnrollmentService {
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private EnrollmentRepository enrollmentRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final EnrollmentRepository enrollmentRepository;
 
     @Transactional
     public void enrollUser(Long userId, Long courseId) {

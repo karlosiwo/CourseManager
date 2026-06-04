@@ -1,11 +1,13 @@
 package com.coursemanager.model.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
