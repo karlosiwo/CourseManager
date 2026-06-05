@@ -4,10 +4,12 @@ import com.coursemanager.dto.CourseDto;
 import com.coursemanager.model.entity.Course;
 import com.coursemanager.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.criteria.Predicate;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,19 +21,25 @@ public class CourseService {
     private final CategoryService categoryService;
     private final InstructorService instructorService;
 
+    // Metoda z paginacją i specyfikacją (używana w nowym kontrolerze)
+    public Page<Course> findAllCourses(Specification<Course> spec, Pageable pageable) {
+        return courseRepository.findAll(spec, pageable);
+    }
+
+    // Stara metoda (zachowana dla kompatybilności z ewentualnymi innymi kontrolerami)
     public List<Course> findAllCourses(String sortBy, String direction, String categoryName, LocalDate fromDate) {
         Sort.Direction dir = direction != null && direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(dir, sortBy != null ? sortBy : "startDate");
 
         Specification<Course> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
             if (categoryName != null && !categoryName.isEmpty()) {
                 predicates.add(cb.equal(root.get("category").get("name"), categoryName));
             }
             if (fromDate != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("startDate"), fromDate));
             }
-            return cb.and(predicates.toArray(new Predicate[0]));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
         return courseRepository.findAll(spec, sort);
     }

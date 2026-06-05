@@ -15,6 +15,33 @@
 <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
     <a href="/courses/new" class="btn btn-primary mt-2">Dodaj nowy kurs</a>
 </div>
+
+<!-- Filtry (proste, można rozbudować) -->
+<form method="get" class="row g-3 mt-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="category" class="form-control" placeholder="Kategoria" th:value="${currentCategory}">
+    </div>
+    <div class="col-auto">
+        <input type="date" name="fromDate" class="form-control" th:value="${currentFromDate}">
+    </div>
+    <div class="col-auto">
+        <select name="sort" class="form-select">
+            <option value="">Sortuj</option>
+            <option value="startDate" th:selected="${currentSort == 'startDate'}">Data rozpoczęcia</option>
+            <option value="title" th:selected="${currentSort == 'title'}">Tytuł</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="direction" class="form-select">
+            <option value="asc" th:selected="${currentDirection == 'asc'}">Rosnąco</option>
+            <option value="desc" th:selected="${currentDirection == 'desc'}">Malejąco</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-secondary">Filtruj</button>
+    </div>
+</form>
+
 <table class="table table-bordered mt-3">
     <thead>
     <tr>
@@ -22,13 +49,13 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="course : ${courses}">
+    <tr th:each="course : ${coursePage.content}">
         <td><a th:href="@{/courses/{id}(id=${course.id})}" th:text="${course.title}"></a></td>
         <td th:text="${course.startDate}"></td>
-        <td th:text="${course.category.name}"></td>
+        <td th:text="${course.categoryName}"></td> <!-- Uwaga: w DTO może być categoryName -->
         <td id="seats-${course.id}">--</td>
         <td>
-            <button class="btn btn-sm btn-success enroll-btn" data-id="${course.id}">Zapisz się</button>
+            <button class="btn btn-sm btn-success enroll-btn" th:data-id="${course.id}">Zapisz się</button>
             <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
                 <a th:href="@{/courses/edit/{id}(id=${course.id})}" class="btn btn-sm btn-warning">Edytuj</a>
                 <a th:href="@{/courses/delete/{id}(id=${course.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Usunąć?')">Usuń</a>
@@ -37,6 +64,23 @@
     </tr>
     </tbody>
 </table>
+
+<!-- Paginacja -->
+<nav th:if="${coursePage.totalPages > 1}">
+    <ul class="pagination">
+        <li class="page-item" th:classappend="${coursePage.first} ? 'disabled'">
+            <a class="page-link" th:href="@{/courses(page=0, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">«</a>
+        </li>
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, coursePage.totalPages-1)}"
+            th:classappend="${i == coursePage.number} ? 'active'">
+            <a class="page-link" th:href="@{/courses(page=${i}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}" th:text="${i+1}"></a>
+        </li>
+        <li class="page-item" th:classappend="${coursePage.last} ? 'disabled'">
+            <a class="page-link" th:href="@{/courses(page=${coursePage.totalPages-1}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">»</a>
+        </li>
+    </ul>
+</nav>
+
 <script>
     $(document).ready(function() {
         $('.enroll-btn').each(function() {

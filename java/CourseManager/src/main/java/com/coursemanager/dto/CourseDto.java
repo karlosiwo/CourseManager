@@ -13,10 +13,10 @@ public class CourseDto {
     private Long id;
 
     @NotBlank(message = "Tytuł jest wymagany")
-    @Size(max = 100)
+    @Size(max = 100, message = "Tytuł może mieć maksymalnie 100 znaków")
     private String title;
 
-    @Size(max = 2000)
+    @Size(max = 2000, message = "Opis może mieć maksymalnie 2000 znaków")
     private String description;
 
     @NotNull(message = "Data rozpoczęcia jest wymagana")
@@ -33,4 +33,8 @@ public class CourseDto {
 
     @NotNull(message = "Wybierz prowadzącego")
     private Long instructorId;
+
+    // Dodatkowe pola do wyświetlania w widoku (nie są mapowane w formularzu)
+    private String categoryName;
+    private String instructorName;
 }
