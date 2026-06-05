@@ -1,4 +1,6 @@
--- Funkcja licząca wolne miejsca
+-- ============================================================
+-- 1. FUNKCJA (już istniejąca, bez zmian)
+-- ============================================================
 CREATE OR REPLACE FUNCTION liczba_wolnych_miejsc(p_course_id BIGINT)
     RETURNS INT AS $$
 DECLARE
@@ -11,7 +13,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Procedura zapisu na kurs
+-- ============================================================
+-- 2. KURSOR – zwraca listę uczestników kursu (aktywnych zapisów)
+-- ============================================================
+CREATE OR REPLACE FUNCTION lista_uczestnikow_kursu(p_course_id BIGINT)
+    RETURNS TABLE(user_id BIGINT, username VARCHAR, enrollment_date TIMESTAMP) AS $$
+DECLARE
+    rec RECORD;
+BEGIN
+    FOR rec IN
+        SELECT u.id, u.username, e.enrollment_date
+        FROM users u
+                 JOIN enrollments e ON u.id = e.user_id
+        WHERE e.course_id = p_course_id AND e.status = 'AKTYWNY'
+        ORDER BY e.enrollment_date
+        LOOP
+            user_id := rec.id;
+            username := rec.username;
+            enrollment_date := rec.enrollment_date;
+            RETURN NEXT;
+        END LOOP;
+    RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================
+-- 3. PROCEDURA ZAPISU (bez zmian)
+-- ============================================================
 CREATE OR REPLACE PROCEDURE zapisz_na_kurs(p_user_id BIGINT, p_course_id BIGINT)
     LANGUAGE plpgsql AS $$
 DECLARE
@@ -33,10 +61,43 @@ BEGIN
 END;
 $$;
 
--- Procedura anulowania zapisu
+-- ============================================================
+-- 4. PROCEDURA ANULOWANIA (bez zmian)
+-- ============================================================
 CREATE OR REPLACE PROCEDURE anuluj_zapis(p_enrollment_id BIGINT)
     LANGUAGE plpgsql AS $$
 BEGIN
     UPDATE enrollments SET status = 'ANULOWANY' WHERE id = p_enrollment_id;
 END;
 $$;
+
+-- ============================================================
+-- 5. TRIGGER – logowanie zmian statusu zapisu do tabeli audit_log
+-- ============================================================
+-- Najpierw tworzymy tabelę audytową
+CREATE TABLE IF NOT EXISTS audit_log (
+                                         id SERIAL PRIMARY KEY,
+                                         enrollment_id BIGINT NOT NULL,
+                                         old_status VARCHAR(20),
+                                         new_status VARCHAR(20),
+                                         changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Funkcja wyzwalacza
+CREATE OR REPLACE FUNCTION log_enrollment_status_change()
+    RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.status IS DISTINCT FROM NEW.status THEN
+        INSERT INTO audit_log(enrollment_id, old_status, new_status)
+        VALUES (OLD.id, OLD.status, NEW.status);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Sam trigger (wykonywany po każdej aktualizacji tabeli enrollments)
+DROP TRIGGER IF EXISTS trg_enrollment_status ON enrollments;
+CREATE TRIGGER trg_enrollment_status
+    AFTER UPDATE ON enrollments
+    FOR EACH ROW
+EXECUTE FUNCTION log_enrollment_status_change();
