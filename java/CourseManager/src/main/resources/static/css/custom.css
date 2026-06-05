@@ -1,12 +1,108 @@
+/* custom.css - dopracowany wygląd dla CourseManager */
+
 body {
-    background-color: #f8f9fa;
+    background-color: #f8f9fc;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    padding-top: 20px;
+    padding-bottom: 40px;
 }
-.jumbotron {
-    background-color: #e9ecef;
-    padding: 2rem;
-    border-radius: 0.5rem;
+
+/* Karty i kontenery */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-.table th {
-    background-color: #343a40;
-    color: white;
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+}
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    border-radius: 1rem 1rem 0 0 !important;
+}
+.btn {
+    border-radius: 2rem;
+    padding: 0.4rem 1.2rem;
+    font-weight: 500;
+}
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+.btn-outline-primary {
+    border-radius: 2rem;
+}
+/* Tabela */
+.table {
+    background-color: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.03);
+}
+.table thead th {
+    background-color: #f2f4f8;
+    border-bottom: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+/* Paginacja */
+.pagination .page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.pagination .page-link {
+    border-radius: 2rem;
+    margin: 0 4px;
+    color: #4e73df;
+}
+/* Formularze */
+.form-control, .form-select {
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 1rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+/* Alerty */
+.alert {
+    border-radius: 1rem;
+    border: none;
+}
+/* Nawigacja użytkownika */
+.user-info {
+    background-color: #eef2ff;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+}
+/* Kafelek kursu (alternatywny widok) */
+.course-card {
+    transition: all 0.2s;
+}
+.course-card .card-title a {
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: 600;
+}
+.course-card .card-title a:hover {
+    color: #4e73df;
+}
+/* Stopka */
+footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.85rem;
 }

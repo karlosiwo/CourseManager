@@ -1,45 +1,40 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Formularz kursu</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-<h2>Dodaj/Edytuj kurs</h2>
-<form th:action="${courseDto.id != null ? '/courses/edit/' + courseDto.id : '/courses/new'}" th:object="${courseDto}" method="post">
-    <div class="mb-3">
-        <label>Tytuł</label>
-        <input type="text" th:field="*{title}" class="form-control">
-        <div th:errors="*{title}" class="text-danger"></div>
+<head th:replace="fragments/header :: head"></head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="max-width: 700px;">
+    <div class="card shadow rounded-4 border-0">
+        <div class="card-header bg-white">
+            <h3 th:text="${courseDto.id == null} ? '➕ Dodaj nowy kurs' : '✏️ Edytuj kurs'"></h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/courses/new}" th:method="post" th:object="${courseDto}" th:if="${courseDto.id == null}">
+                <div class="mb-3"><label class="form-label">Tytuł</label><input th:field="*{title}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Opis</label><textarea th:field="*{description}" class="form-control"></textarea></div>
+                <div class="mb-3"><label class="form-label">Data rozpoczęcia</label><input type="date" th:field="*{startDate}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Maks. miejsc</label><input type="number" th:field="*{maxSeats}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Kategoria</label><select th:field="*{categoryId}" class="form-select"><option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option></select></div>
+                <div class="mb-3"><label class="form-label">Prowadzący</label><select th:field="*{instructorId}" class="form-select"><option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.name}"></option></select></div>
+                <button type="submit" class="btn btn-primary">Zapisz kurs</button>
+                <a href="/courses" class="btn btn-secondary">Anuluj</a>
+            </form>
+
+            <form th:action="@{/courses/edit/{id}(id=${courseDto.id})}" th:method="post" th:object="${courseDto}" th:if="${courseDto.id != null}">
+                <div class="mb-3"><label class="form-label">Tytuł</label><input th:field="*{title}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Opis</label><textarea th:field="*{description}" class="form-control"></textarea></div>
+                <div class="mb-3"><label class="form-label">Data rozpoczęcia</label><input type="date" th:field="*{startDate}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Maks. miejsc</label><input type="number" th:field="*{maxSeats}" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Kategoria</label><select th:field="*{categoryId}" class="form-select"><option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option></select></div>
+                <div class="mb-3"><label class="form-label">Prowadzący</label><select th:field="*{instructorId}" class="form-select"><option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.name}"></option></select></div>
+                <button type="submit" class="btn btn-primary">Aktualizuj kurs</button>
+                <a href="/courses" class="btn btn-secondary">Anuluj</a>
+            </form>
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Opis</label>
-        <textarea th:field="*{description}" class="form-control"></textarea>
-    </div>
-    <div class="mb-3">
-        <label>Data rozpoczęcia</label>
-        <input type="date" th:field="*{startDate}" class="form-control">
-        <div th:errors="*{startDate}" class="text-danger"></div>
-    </div>
-    <div class="mb-3">
-        <label>Maksymalna liczba miejsc</label>
-        <input type="number" th:field="*{maxSeats}" class="form-control">
-        <div th:errors="*{maxSeats}" class="text-danger"></div>
-    </div>
-    <div class="mb-3">
-        <label>Kategoria</label>
-        <select th:field="*{categoryId}" class="form-control">
-            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
-        </select>
-    </div>
-    <div class="mb-3">
-        <label>Prowadzący</label>
-        <select th:field="*{instructorId}" class="form-control">
-            <option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.firstName + ' ' + ins.lastName}"></option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Zapisz</button>
-    <a href="/courses" class="btn btn-secondary">Anuluj</a>
-</form>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

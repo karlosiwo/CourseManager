@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CourseManager</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+<div th:fragment="navbar">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="/">📘 CourseManager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/courses">📋 Kursy</a></li>
+                    <li sec:authorize="isAuthenticated()" class="nav-item"><a class="nav-link" href="/my-enrollments">📌 Moje zapisy</a></li>
+                    <li sec:authorize="hasRole('ADMIN')" class="nav-item"><a class="nav-link" href="/admin/users">👥 Użytkownicy</a></li>
+                    <li sec:authorize="hasRole('ADMIN')" class="nav-item"><a class="nav-link" href="/admin/reports">📊 Raporty</a></li>
+                </ul>
+                <div class="d-flex" sec:authorize="isAuthenticated()">
+                    <span class="user-info me-3">
+                        👤 <span sec:authentication="name">User</span>
+                    </span>
+                    <a href="/logout" class="btn btn-outline-danger btn-sm">Wyloguj</a>
+                </div>
+                <div sec:authorize="isAnonymous()">
+                    <a href="/login" class="btn btn-primary btn-sm me-2">Logowanie</a>
+                    <a href="/register" class="btn btn-outline-secondary btn-sm">Rejestracja</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

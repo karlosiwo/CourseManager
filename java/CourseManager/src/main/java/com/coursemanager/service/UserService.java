@@ -17,7 +17,7 @@ import java.util.List;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private PasswordEncoder passwordEncoder; // nie final, wstrzykiwane przez setter
+    private PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -55,14 +55,22 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
+    public User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
+
     public void changeUserRole(Long userId, String newRole) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = findUserById(userId);
         user.setRole(newRole);
         userRepository.save(user);
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public long countUsers() {
+        return userRepository.count();
     }
 }

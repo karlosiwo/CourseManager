@@ -1,34 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Zarządzanie użytkownikami</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-<h2>Użytkownicy systemu</h2>
-<table class="table">
-    <thead>
-    <tr><th>ID</th><th>Login</th><th>Email</th><th>Rola</th><th>Zmień rolę</th></tr>
-    </thead>
-    <tbody>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.email}"></td>
-        <td th:text="${user.role}"></td>
-        <td>
-            <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
-                <select name="role">
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="FULL_USER">FULL_USER</option>
-                    <option value="LIMITED_USER">LIMITED_USER</option>
-                </select>
-                <button type="submit" class="btn btn-sm btn-primary">Zmień</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-<a href="/courses" class="btn btn-secondary">Powrót</a>
+<head th:replace="fragments/header :: head"></head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+<div class="container">
+    <h2>👥 Użytkownicy systemu</h2>
+    <table class="table">
+        <thead><tr><th>ID</th><th>Login</th><th>Email</th><th>Rola</th><th>Akcja</th></tr></thead>
+        <tbody>
+        <tr th:each="u : ${users}">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.username}"></td>
+            <td th:text="${u.email}"></td>
+            <td th:text="${u.role}"></td>
+            <td><a th:href="@{/admin/users/change-role/{id}(id=${u.id})}" class="btn btn-sm btn-outline-secondary">Zmień rolę</a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

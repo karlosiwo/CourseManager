@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Błąd</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-</head>
-<body class="container mt-5">
-<div class="alert alert-danger">
-    <h3>Wystąpił błąd</h3>
-    <p th:text="${error}"></p>
-    <a href="/" class="btn btn-primary">Strona główna</a>
+<head th:replace="fragments/header :: head"></head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+<div class="container text-center mt-5">
+    <div class="alert alert-danger shadow-sm rounded-4 p-5">
+        <h1>⚠️ Ups! Coś poszło nie tak.</h1>
+        <p th:text="${error}">Wystąpił nieoczekiwany błąd.</p>
+        <a href="/" class="btn btn-primary mt-3">Strona główna</a>
+    </div>
 </div>
+<div th:replace="fragments/footer :: footer"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

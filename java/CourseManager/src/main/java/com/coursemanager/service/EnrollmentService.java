@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -48,5 +49,25 @@ public class EnrollmentService {
 
     public List<Enrollment> getCourseParticipants(Course course) {
         return enrollmentRepository.findByCourse(course);
+    }
+
+    public long countEnrollments() {
+        return enrollmentRepository.count();
+    }
+
+    /**
+     * Zwraca listę najpopularniejszych kursów (max 10) z liczbą zapisów.
+     * Każdy element mapy zawiera: "courseId", "title", "enrollmentCount".
+     */
+    public List<Map<String, Object>> findMostPopularCourses() {
+        String sql = """
+            SELECT c.id as courseId, c.title, COUNT(e.id) as enrollmentCount
+            FROM courses c
+            LEFT JOIN enrollments e ON c.id = e.course_id
+            GROUP BY c.id, c.title
+            ORDER BY enrollmentCount DESC
+            LIMIT 10
+        """;
+        return jdbcTemplate.queryForList(sql);
     }
 }

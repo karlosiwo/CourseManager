@@ -1,108 +1,154 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <title>Lista kursów</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-    <script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
-    <script src="/js/availability.js"></script>
+<head th:replace="~{fragments/header :: head}">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
-<body class="container mt-4">
-<h2>Kursy</h2>
-<div sec:authorize="isAuthenticated()">
-    <a href="/my-enrollments" class="btn btn-info">Moje zapisy</a>
-    <a href="/logout" class="btn btn-secondary">Wyloguj</a>
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">📚 Lista kursów</h2>
+        <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
+            <a href="/courses/new" class="btn btn-primary">+ Nowy kurs</a>
+        </div>
+    </div>
+
+    <!-- Filtry -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Kategoria</label>
+                    <select name="category" class="form-select">
+                        <option value="">Wszystkie</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}" th:selected="${currentCategory == cat.name}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Data od</label>
+                    <input type="date" name="fromDate" class="form-control" th:value="${currentFromDate}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Sortuj</label>
+                    <select name="sort" class="form-select">
+                        <option value="startDate" th:selected="${currentSort == 'startDate'}">Data</option>
+                        <option value="title" th:selected="${currentSort == 'title'}">Tytuł</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kierunek</label>
+                    <select name="direction" class="form-select">
+                        <option value="asc" th:selected="${currentDirection == 'asc'}">Rosnąco</option>
+                        <option value="desc" th:selected="${currentDirection == 'desc'}">Malejąco</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">🔍 Filtruj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+            <tr><th>Tytuł</th><th>Data</th><th>Kategoria</th><th>Wolne miejsca</th><th>Akcje</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${coursePage.content}">
+                <td><a th:href="@{/courses/{id}(id=${course.id})}" th:text="${course.title}" class="fw-bold text-decoration-none"></a></td>
+                <td th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}"></td>
+                <td th:text="${course.categoryName}"></td>
+                <td><span th:id="'seats-' + ${course.id}" class="badge bg-info text-dark">--</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-success enroll-btn" th:data-id="${course.id}">Zapisz się</button>
+                    <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')" class="d-inline">
+                        <a th:href="@{/courses/edit/{id}(id=${course.id})}" class="btn btn-sm btn-outline-warning">Edytuj</a>
+                        <a th:href="@{/courses/delete/{id}(id=${course.id})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Usunąć?')">Usuń</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginacja -->
+    <nav th:if="${coursePage.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${coursePage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/courses(page=0, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, coursePage.totalPages - 1)}"
+                th:classappend="${i == coursePage.number} ? 'active'">
+                <a class="page-link" th:href="@{/courses(page=${i}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${coursePage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/courses(page=${coursePage.totalPages - 1}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">»</a>
+            </li>
+        </ul>
+    </nav>
 </div>
-<div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
-    <a href="/courses/new" class="btn btn-primary mt-2">Dodaj nowy kurs</a>
-</div>
 
-<!-- Filtry (proste, można rozbudować) -->
-<form method="get" class="row g-3 mt-2 mb-3">
-    <div class="col-auto">
-        <input type="text" name="category" class="form-control" placeholder="Kategoria" th:value="${currentCategory}">
-    </div>
-    <div class="col-auto">
-        <input type="date" name="fromDate" class="form-control" th:value="${currentFromDate}">
-    </div>
-    <div class="col-auto">
-        <select name="sort" class="form-select">
-            <option value="">Sortuj</option>
-            <option value="startDate" th:selected="${currentSort == 'startDate'}">Data rozpoczęcia</option>
-            <option value="title" th:selected="${currentSort == 'title'}">Tytuł</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <select name="direction" class="form-select">
-            <option value="asc" th:selected="${currentDirection == 'asc'}">Rosnąco</option>
-            <option value="desc" th:selected="${currentDirection == 'desc'}">Malejąco</option>
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-secondary">Filtruj</button>
-    </div>
-</form>
-
-<table class="table table-bordered mt-3">
-    <thead>
-    <tr>
-        <th>Tytuł</th><th>Data rozpoczęcia</th><th>Kategoria</th><th>Wolne miejsca</th><th>Akcja</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="course : ${coursePage.content}">
-        <td><a th:href="@{/courses/{id}(id=${course.id})}" th:text="${course.title}"></a></td>
-        <td th:text="${course.startDate}"></td>
-        <td th:text="${course.categoryName}"></td> <!-- Uwaga: w DTO może być categoryName -->
-        <td id="seats-${course.id}">--</td>
-        <td>
-            <button class="btn btn-sm btn-success enroll-btn" th:data-id="${course.id}">Zapisz się</button>
-            <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
-                <a th:href="@{/courses/edit/{id}(id=${course.id})}" class="btn btn-sm btn-warning">Edytuj</a>
-                <a th:href="@{/courses/delete/{id}(id=${course.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Usunąć?')">Usuń</a>
-            </div>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<!-- Paginacja -->
-<nav th:if="${coursePage.totalPages > 1}">
-    <ul class="pagination">
-        <li class="page-item" th:classappend="${coursePage.first} ? 'disabled'">
-            <a class="page-link" th:href="@{/courses(page=0, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">«</a>
-        </li>
-        <li class="page-item" th:each="i : ${#numbers.sequence(0, coursePage.totalPages-1)}"
-            th:classappend="${i == coursePage.number} ? 'active'">
-            <a class="page-link" th:href="@{/courses(page=${i}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}" th:text="${i+1}"></a>
-        </li>
-        <li class="page-item" th:classappend="${coursePage.last} ? 'disabled'">
-            <a class="page-link" th:href="@{/courses(page=${coursePage.totalPages-1}, size=${coursePage.size}, sort=${currentSort}, direction=${currentDirection}, category=${currentCategory}, fromDate=${currentFromDate})}">»</a>
-        </li>
-    </ul>
-</nav>
-
-<script>
+<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
     $(document).ready(function() {
+        // Pobranie tokena CSRF z meta tagów
+        var csrfToken = $('meta[name="_csrf"]').attr('content');
+        var csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+        // Ustawienie nagłówka dla wszystkich AJAX
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                if (csrfToken && csrfHeader) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            }
+        });
+
         $('.enroll-btn').each(function() {
-            var btn = $(this);
-            var courseId = btn.data('id');
-            $.get('/api/courses/' + courseId + '/availability', function(data) {
-                $('#seats-' + courseId).text(data.availableSeats);
-            });
-            btn.click(function() {
-                $.get('/api/courses/' + courseId + '/availability', function(data) {
-                    if (data.availableSeats > 0) {
-                        $.post('/enroll/' + courseId, function() {
-                            alert('Zapisano pomyślnie!');
-                            location.reload();
-                        }).fail(function() { alert('Błąd zapisu'); });
-                    } else {
-                        alert('Brak wolnych miejsc');
-                    }
+            let btn = $(this);
+            let courseId = btn.data('id');
+            let seatsSpan = $('#seats-' + courseId);
+
+            $.get('/api/courses/' + courseId + '/availability')
+                .done(function(data) {
+                    seatsSpan.text(data.availableSeats);
+                })
+                .fail(function() {
+                    seatsSpan.text('?');
                 });
+
+            btn.click(function(e) {
+                e.preventDefault();
+                $.get('/api/courses/' + courseId + '/availability')
+                    .done(function(data) {
+                        if (data.availableSeats > 0) {
+                            $.post('/enroll/' + courseId)
+                                .done(function() {
+                                    alert('✅ Zapisano pomyślnie!');
+                                    location.reload();
+                                })
+                                .fail(function(xhr) {
+                                    if (xhr.status === 403) {
+                                        alert('❌ Brak uprawnień. Skontaktuj się z administratorem, aby nadać rolę FULL_USER.');
+                                    } else {
+                                        alert('❌ Błąd zapisu: ' + (xhr.responseText || 'Nieznany błąd'));
+                                    }
+                                });
+                        } else {
+                            alert('⚠️ Brak wolnych miejsc.');
+                        }
+                    });
             });
         });
     });
+    /*]]>*/
 </script>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

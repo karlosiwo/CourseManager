@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Moje zapisy</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-<h2>Moje zapisy na kursy</h2>
-<table class="table">
-    <thead>
-    <tr><th>Kurs</th><th>Data zapisu</th><th>Status</th><th>Akcja</th></tr>
-    </thead>
-    <tbody>
-    <tr th:each="enr : ${enrollments}">
-        <td th:text="${enr.course.title}"></td>
-        <td th:text="${enr.enrollmentDate}"></td>
-        <td th:text="${enr.status}"></td>
-        <td>
-            <form th:if="${enr.status == 'AKTYWNY'}" th:action="@{/cancel/{id}(id=${enr.id})}" method="post">
-                <button type="submit" class="btn btn-danger btn-sm">Anuluj zapis</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-<a href="/courses" class="btn btn-secondary">Powrót do listy kursów</a>
+<head th:replace="fragments/header :: head"></head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+<div class="container">
+    <h2>📌 Moje zapisy</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Kurs</th><th>Data rozpoczęcia</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="e : ${enrollments}">
+                <td><a th:href="@{/courses/{id}(id=${e.course.id})}" th:text="${e.course.title}"></a></td>
+                <td th:text="${e.course.startDate}"></td>
+                <td><span class="badge bg-success">Zapisany</span></td>
+                <td><a th:href="@{/enroll/cancel/{id}(id=${e.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Anulować zapis?')">Anuluj</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <a href="/courses" class="btn btn-primary">Przeglądaj kursy</a>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

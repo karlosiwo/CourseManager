@@ -1,16 +1,28 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Szczegóły kursu</title>
-    <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
-</head>
-<body class="container mt-4">
-<h2 th:text="${course.title}"></h2>
-<p><strong>Opis:</strong> <span th:text="${course.description}"></span></p>
-<p><strong>Data:</strong> <span th:text="${course.startDate}"></span></p>
-<p><strong>Kategoria:</strong> <span th:text="${course.category.name}"></span></p>
-<p><strong>Prowadzący:</strong> <span th:text="${course.instructor.firstName + ' ' + course.instructor.lastName}"></span></p>
-<p><strong>Maksymalna liczba miejsc:</strong> <span th:text="${course.maxSeats}"></span></p>
-<a href="/courses" class="btn btn-secondary">Powrót</a>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/header :: head"></head>
+<body>
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container">
+    <div class="card shadow-sm border-0 rounded-4 p-4" th:object="${course}">
+        <div class="d-flex justify-content-between">
+            <h2 th:text="*{title}"></h2>
+            <span sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
+                <a th:href="@{/courses/edit/{id}(id=*{id})}" class="btn btn-warning">Edytuj</a>
+                <a th:href="@{/courses/delete/{id}(id=*{id})}" class="btn btn-danger" onclick="return confirm('Usunąć?')">Usuń</a>
+            </span>
+        </div>
+        <hr>
+        <p><strong>Opis:</strong> <span th:text="*{description}"></span></p>
+        <p><strong>Data rozpoczęcia:</strong> <span th:text="*{startDate}"></span></p>
+        <p><strong>Maksymalna liczba miejsc:</strong> <span th:text="*{maxSeats}"></span></p>
+        <p><strong>Kategoria:</strong> <span th:text="*{category.name}"></span></p>
+        <p><strong>Prowadzący:</strong> <span th:text="*{instructor.getName()}"></span></p>
+        <a href="/courses" class="btn btn-secondary mt-3">← Powrót do listy</a>
+    </div>
+</div>
+<div th:replace="fragments/footer :: footer"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
