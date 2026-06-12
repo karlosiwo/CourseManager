@@ -1,22 +1,10 @@
-# CourseManager – System zapisów na kursy
+# CourseManager – system zapisów na kursy
 
 ## Opis projektu
 
-CourseManager to internetowa aplikacja napisana w języku Java z wykorzystaniem frameworka Spring Boot. Umożliwia zarządzanie kursami, użytkownikami oraz zapisami na kursy.
+CourseManager to aplikacja internetowa napisana w Javie z użyciem Spring Boot. System umożliwia zarządzanie kursami, kategoriami, prowadzącymi, użytkownikami oraz zapisami na kursy.
 
-System obsługuje:
-
-- trzy role użytkowników,
-- kontrolę limitu miejsc,
-- blokadę podwójnych zapisów,
-- sortowanie i filtrowanie kursów,
-- raporty i statystyki.
-
-Logika biznesowa zapisów została zaimplementowana w procedurach i funkcjach PL/pgSQL w bazie PostgreSQL.
-
-Aplikacja spełnia wymagania postawione w deklaracji projektowej (MVP oraz wybrane funkcjonalności „Nice to Have”).
-
----
+Projekt zawiera panel użytkownika, panel administratora, logowanie z rolami, operacje CRUD, REST API, dokumentację Swagger/OpenAPI oraz logikę zapisów opartą częściowo o procedury i funkcje PostgreSQL.
 
 ## Technologie
 
@@ -28,131 +16,106 @@ Aplikacja spełnia wymagania postawione w deklaracji projektowej (MVP oraz wybra
 - Thymeleaf
 - Bootstrap 5
 - jQuery
-- PostgreSQL
+- PostgreSQL 16
 - PL/pgSQL
+- Swagger / OpenAPI
 - Docker / Docker Compose
 - Maven
-
----
 
 ## Wymagania
 
 - Docker Desktop
 - Git
-- IntelliJ IDEA (opcjonalnie)
-- Wolny port 5432 (lub 5433)
-- Wolny port 8080 (lub 8081)
+- IntelliJ IDEA lub inne IDE
+- wolny port 8081 dla aplikacji
+- wolny port 5433 dla bazy danych
 
----
+## Uruchomienie projektu przez Docker
 
-# Uruchomienie projektu (Docker)
-
-## 1. Klonowanie repozytorium
+### 1. Przejście do katalogu aplikacji
 
 ```bash
-git clone https://github.com/karlosiwo/CourseManager.git
-cd CourseManager/java/CourseManager
+cd java/CourseManager
 ```
 
-## 2. Uruchomienie kontenerów
+### 2. Uruchomienie kontenerów
 
 ```bash
-docker compose up -d --build
+docker compose up --build
 ```
 
-Pierwsze uruchomienie może potrwać kilka minut.
-
-## 3. Sprawdzenie kontenerów
-
-```bash
-docker ps
-```
-
-Powinny zostać uruchomione:
+Po uruchomieniu powinny działać kontenery:
 
 - `coursemanager-postgres`
 - `coursemanager-app`
 
-## 4. Uruchomienie aplikacji
-
-Jeżeli używany jest port 8080:
-
-```text
-http://localhost:8080
-```
-
-Jeżeli w `docker-compose.yml` ustawiono:
-
-```yaml
-ports:
-  - "8081:8080"
-```
-
-użyj:
+### 3. Adres aplikacji
 
 ```text
 http://localhost:8081
 ```
 
----
+### 4. Reset bazy po zmianach struktury
 
-# Logowanie i role
+Jeżeli projekt był wcześniej uruchamiany, skrypty SQL mogą się nie wykonać ponownie. Wtedy trzeba usunąć stary wolumen bazy:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+## Logowanie i role
 
 | Login | Hasło | Rola | Uprawnienia |
-|---------|---------|---------|---------|
-| admin | admin | ROLE_ADMIN | Zarządzanie użytkownikami, kursami, kategoriami, prowadzącymi i raportami |
-| użytkownik po rejestracji | własne | ROLE_LIMITED_USER | Przeglądanie kursów i zapisów |
-| użytkownik po zmianie roli | własne | ROLE_FULL_USER | Zapisy na kursy oraz zarządzanie kursami |
+|---|---|---|---|
+| `admin` | `admin` | `ROLE_ADMIN` | Zarządzanie użytkownikami, kursami, kategoriami, prowadzącymi i raportami |
+| użytkownik po rejestracji | własne | `ROLE_LIMITED_USER` | Przeglądanie kursów i własnych zapisów |
+| użytkownik po zmianie roli | własne | `ROLE_FULL_USER` | Zarządzanie kursami, kategoriami, prowadzącymi, zapisami i udostępnieniami |
 
-> Nowo zarejestrowany użytkownik otrzymuje domyślnie rolę `ROLE_LIMITED_USER`.
+Nowo zarejestrowany użytkownik otrzymuje domyślnie rolę `ROLE_LIMITED_USER`.
 
-Role można zmieniać w panelu administratora:
+Zmiana ról jest dostępna w panelu administratora:
 
 ```text
 /admin/users
 ```
 
----
+## Funkcjonalności
 
-# Funkcjonalności
+### Dla niezalogowanych
 
-## Dla wszystkich użytkowników
+- strona główna,
+- rejestracja,
+- logowanie,
+- publiczny widok udostępnionego kursu przez link.
 
-- Strona główna
-- Rejestracja
-- Logowanie
-- Lista kursów
-- Sortowanie kursów
-- Filtrowanie kursów
+### Dla użytkowników
 
-## ROLE_LIMITED_USER
-
-- przeglądanie kursów,
-- przeglądanie szczegółów kursów,
-- przeglądanie własnych zapisów.
-
-## ROLE_FULL_USER
-
-Dodatkowo:
-
+- lista kursów,
+- szczegóły kursu,
+- sortowanie i filtrowanie kursów,
+- zapamiętywanie sortowania w cookies,
+- przeglądanie własnych zapisów,
 - zapis na kurs,
 - anulowanie zapisu,
-- dodawanie kursów,
-- edycja kursów,
-- usuwanie kursów.
+- komunikat o braku wolnych miejsc.
 
-## ROLE_ADMIN
+### Dla pełnych użytkowników i administratorów
 
-Dodatkowo:
+- CRUD kursów,
+- CRUD kategorii,
+- CRUD prowadzących,
+- udostępnianie kursu innemu użytkownikowi,
+- generowanie publicznego linku do kursu.
 
-- zarządzanie użytkownikami,
+### Dla administratora
+
+- lista użytkowników,
 - zmiana ról,
 - raporty,
-- pełny dostęp administracyjny.
+- raport popularnych kursów.
 
----
-
-# Kontrola zapisów
+## Kontrola zapisów
 
 System wykorzystuje procedury i funkcje PL/pgSQL.
 
@@ -164,7 +127,7 @@ Funkcja:
 liczba_wolnych_miejsc(...)
 ```
 
-oblicza aktualną liczbę wolnych miejsc.
+oblicza aktualną liczbę wolnych miejsc na kursie.
 
 ### Zapis na kurs
 
@@ -188,27 +151,72 @@ Procedura:
 anuluj_zapis(...)
 ```
 
-zmienia status zapisu na:
+zmienia status zapisu na `ANULOWANY`, dzięki czemu historia zapisów pozostaje zachowana.
+
+### Audyt zmian
+
+Trigger:
+
+```sql
+trg_enrollment_status
+```
+
+zapisuje zmianę statusu zapisu do tabeli `audit_log`.
+
+## Udostępnianie kursów
+
+Udostępnianie kursów pozwala przekazać informację o kursie innemu użytkownikowi albo osobie niezalogowanej przez link.
+
+Dostępne są dwa tryby:
+
+- udostępnienie konkretnemu użytkownikowi,
+- wygenerowanie publicznego linku.
+
+Publiczny link ma postać:
 
 ```text
-ANULOWANY
+/public/share/{token}
 ```
 
-dzięki czemu historia zapisów pozostaje zachowana.
+Udostępnienie nie oznacza zapisu na kurs ani prawa do jego edycji.
 
----
+## REST API
 
-# REST API
+Projekt zawiera REST API dla głównych zasobów:
 
-## Walidacja kategorii
-
-```http
-GET /api/categories/validate?name=java
+```text
+/api/courses
+/api/categories
+/api/instructors
+/api/enrollments
 ```
 
-## Dostępność miejsc
+Przykładowe endpointy:
 
-```http
+```text
+GET    /api/courses
+POST   /api/courses
+PUT    /api/courses/{id}
+DELETE /api/courses/{id}
+
+GET    /api/categories
+POST   /api/categories
+PUT    /api/categories/{id}
+DELETE /api/categories/{id}
+
+GET    /api/instructors
+POST   /api/instructors
+PUT    /api/instructors/{id}
+DELETE /api/instructors/{id}
+
+GET    /api/enrollments
+POST   /api/enrollments
+DELETE /api/enrollments/{id}
+```
+
+Dostępność miejsc:
+
+```text
 GET /api/courses/{id}/availability
 ```
 
@@ -216,32 +224,32 @@ Przykładowa odpowiedź:
 
 ```json
 {
-  "availablePlaces": 5
+  "availableSeats": 5
 }
 ```
 
----
+Swagger UI:
 
-# Walidacja
+```text
+http://localhost:8081/swagger-ui/index.html
+```
 
-Aplikacja wykorzystuje:
+## Walidacja
 
-### Walidację po stronie klienta
+Aplikacja wykorzystuje walidację formularzy po stronie serwera i widoków Thymeleaf.
 
-- HTML5
-- JavaScript
-
-### Walidację po stronie serwera
+Użyte przykłady walidacji:
 
 - `@NotBlank`
-- `@Email`
+- `@NotNull`
 - `@Size`
-- `@Future`
-- inne adnotacje Bean Validation
+- `@Email`
+- `@Min`
+- `@Max`
+- `@FutureOrPresent`
+- własna walidacja unikalności kategorii
 
----
-
-# Struktura projektu
+## Struktura projektu
 
 ```text
 CourseManager
@@ -253,111 +261,66 @@ CourseManager
 │   │   ├── java/com/coursemanager
 │   │   │   ├── config
 │   │   │   ├── controller
+│   │   │   ├── controller/rest
 │   │   │   ├── dto
 │   │   │   ├── exception
+│   │   │   ├── mapper
 │   │   │   ├── model/entity
 │   │   │   ├── repository
 │   │   │   ├── service
 │   │   │   └── validation
 │   │   └── resources
-│   │       ├── application.properties
 │   │       ├── db
 │   │       │   ├── schema.sql
 │   │       │   ├── procedures.sql
+│   │       │   ├── init-db-users.sql
 │   │       │   └── data.sql
 │   │       ├── templates
-│   │       └── static
+│   │       └── application.properties
 │   └── test
 └── README.md
 ```
 
----
-
-# Konfiguracja PostgreSQL
+## Konfiguracja PostgreSQL
 
 Docker uruchamia bazę danych z parametrami:
 
-```text
-Database: coursemanager
-User: postgres
-Password: mysecretpassword
-Port: 5432
-```
+| Parametr | Wartość |
+|---|---|
+| Database | `coursemanager` |
+| Admin kontenera | `postgres` |
+| Hasło admina kontenera | `mysecretpassword` |
+| Port lokalny | `5433` |
+| Konto aplikacji | `coursemanager_app` |
+| Hasło konta aplikacji | `app_password` |
+
+Aplikacja łączy się z bazą przez konto `coursemanager_app`, a nie przez konto `postgres`.
 
 Podczas pierwszego uruchomienia wykonywane są:
 
-```text
-schema.sql
-procedures.sql
-data.sql
-```
+- `schema.sql`,
+- `procedures.sql`,
+- `init-db-users.sql`,
+- `data.sql`.
 
----
-
-# Uruchomienie bez Dockera
-
-1. Utwórz bazę danych `coursemanager`.
-2. Wykonaj ręcznie:
-   - `schema.sql`
-   - `procedures.sql`
-   - `data.sql`
-3. Skonfiguruj `application.properties`.
-4. Uruchom:
-
-```java
-CourseManagerApplication
-```
-
-5. Otwórz:
-
-```text
-http://localhost:8080
-```
-
----
-
-# Najczęstsze problemy
+## Najczęstsze problemy
 
 | Problem | Rozwiązanie |
-|----------|----------|
-| Connection refused | Uruchom PostgreSQL lub kontener Docker |
-| Błąd logowania admina | Sprawdź poprawność hasha BCrypt w bazie |
-| Brak procedur | Wykonaj `procedures.sql` |
-| Port 8080 zajęty | Użyj mapowania `8081:8080` |
-| Port 5432 zajęty | Użyj mapowania `5433:5432` |
+|---|---|
+| Nie działa login `admin` / `admin` | Sprawdź, czy aplikacja działa na `http://localhost:8081` i czy baza została zresetowana po zmianach. |
+| Brak nowych tabel albo procedur | Wykonaj `docker compose down -v`, a potem `docker compose up --build`. |
+| Port 8081 zajęty | Zmień mapowanie portów w `docker-compose.yml`. |
+| Port 5433 zajęty | Zmień mapowanie portu PostgreSQL w `docker-compose.yml`. |
+| Błąd połączenia z bazą przy uruchomieniu lokalnym | Dla uruchomienia bez Dockera zmień host bazy z `postgresql` na `localhost`. |
 
----
+## Uwagi końcowe
 
-# Swagger
+Projekt realizuje główne wymagania aplikacji: role, logowanie, CRUD MVC, REST API, zapisy na kursy, udostępnianie kursów, walidację, procedury bazodanowe, trigger, Swagger oraz dokumentację.
 
-Dokumentacja OpenAPI:
+## Autorzy
 
-```text
-http://localhost:8080/swagger-ui.html
-```
+Jakub Wierciszewski (117268)  
+Karol Ziemak (117292)  
+Michał Szwabowicz (111112)
 
-lub
-
-```text
-http://localhost:8081/swagger-ui.html
-```
-
----
-
-# Autorzy
-
-- Jakub Wierciszewski (117268)
-- Karol Ziemak (117292)
-- Michał Szwabowicz (111112)
-- 
-Projekt wykonany w ramach przedmiotu **Programowanie Zespołowe (PS7)**.
-
----
-
-# Licencja
-
-Projekt udostępniony wyłącznie w celach edukacyjnych.
-
----
-
-Ostatnia aktualizacja: czerwiec 2026
+Projekt wykonany w ramach przedmiotu "Programowanie aplikacji WWW w języku Java" oraz "Systemy Baz Danych" (PS7).
