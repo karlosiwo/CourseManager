@@ -2,9 +2,12 @@ package com.coursemanager.controller;
 
 import com.coursemanager.dto.CourseDto;
 import com.coursemanager.mapper.CourseMapper;
+import com.coursemanager.model.entity.Course;
 import com.coursemanager.service.CategoryService;
 import com.coursemanager.service.CourseService;
 import com.coursemanager.service.InstructorService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import com.coursemanager.model.entity.Course;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.time.LocalDate;
 
 @Controller
@@ -36,7 +40,6 @@ public class CourseController {
     @Autowired
     private CourseMapper courseMapper;
 
-    // Lista kursów z paginacją, sortowaniem i filtrowaniem
     @GetMapping
     public String listCourses(
             @RequestParam(defaultValue = "0") int page,
@@ -45,20 +48,28 @@ public class CourseController {
             @RequestParam(required = false) String direction,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @CookieValue(value = "courseSort", required = false) String cookieSort,
+            @CookieValue(value = "courseDirection", required = false) String cookieDirection,
+            HttpServletResponse response,
             Model model) {
 
-        Sort.Direction dir = (direction != null && direction.equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        String sortField = (sort != null && !sort.isEmpty()) ? sort : "startDate";
+        String sortField = courseService.normalizeSortField(sort != null ? sort : cookieSort);
+        String normalizedDirection = courseService.normalizeDirection(direction != null ? direction : cookieDirection);
+        LocalDate effectiveFromDate = fromDate != null ? fromDate : LocalDate.now();
+
+        response.addCookie(buildCookie("courseSort", sortField));
+        response.addCookie(buildCookie("courseDirection", normalizedDirection));
+
+        Sort.Direction dir = Sort.Direction.fromString(normalizedDirection);
         Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
 
-        // Budujemy specyfikację na podstawie filtrów
         Specification<Course> spec = (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             if (category != null && !category.isEmpty()) {
                 predicates.add(cb.equal(root.get("category").get("name"), category));
             }
-            if (fromDate != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("startDate"), fromDate));
+            if (effectiveFromDate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("startDate"), effectiveFromDate));
             }
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
@@ -67,12 +78,11 @@ public class CourseController {
         Page<CourseDto> courseDtoPage = coursePage.map(courseMapper::toDto);
 
         model.addAttribute("coursePage", courseDtoPage);
-        model.addAttribute("categories", categoryService.findAll());
-        // Przekazujemy też aktualne filtry do zachowania w linkach paginacji
-        model.addAttribute("currentSort", sort);
-        model.addAttribute("currentDirection", direction);
+        model.addAttribute("categories", categoryService.findAllOrderByPopularity());
+        model.addAttribute("currentSort", sortField);
+        model.addAttribute("currentDirection", normalizedDirection);
         model.addAttribute("currentCategory", category);
-        model.addAttribute("currentFromDate", fromDate);
+        model.addAttribute("currentFromDate", effectiveFromDate);
 
         return "courses";
     }
@@ -86,19 +96,20 @@ public class CourseController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("courseDto", new CourseDto());
-        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("categories", categoryService.findAllOrderByPopularity());
         model.addAttribute("instructors", instructorService.findAll());
         return "course-form";
     }
 
     @PostMapping("/new")
-    public String createCourse(@Valid @ModelAttribute CourseDto courseDto, BindingResult result, Model model) {
+    public String createCourse(@Valid @ModelAttribute CourseDto courseDto, BindingResult result, Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryService.findAll());
+            model.addAttribute("categories", categoryService.findAllOrderByPopularity());
             model.addAttribute("instructors", instructorService.findAll());
             return "course-form";
         }
         courseService.saveCourse(courseDto);
+        redirectAttributes.addFlashAttribute("success", "Dodano kurs");
         return "redirect:/courses";
     }
 
@@ -107,25 +118,35 @@ public class CourseController {
         var course = courseService.findCourseById(id);
         CourseDto dto = courseMapper.toDto(course);
         model.addAttribute("courseDto", dto);
-        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("categories", categoryService.findAllOrderByPopularity());
         model.addAttribute("instructors", instructorService.findAll());
         return "course-form";
     }
 
     @PostMapping("/edit/{id}")
-    public String updateCourse(@PathVariable Long id, @Valid @ModelAttribute CourseDto courseDto, BindingResult result, Model model) {
+    public String updateCourse(@PathVariable Long id, @Valid @ModelAttribute CourseDto courseDto, BindingResult result, Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("categories", categoryService.findAll());
+            model.addAttribute("categories", categoryService.findAllOrderByPopularity());
             model.addAttribute("instructors", instructorService.findAll());
             return "course-form";
         }
         courseService.updateCourse(id, courseDto);
+        redirectAttributes.addFlashAttribute("success", "Zaktualizowano kurs");
         return "redirect:/courses";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteCourse(@PathVariable Long id) {
+    @PostMapping("/delete/{id}")
+    public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         courseService.deleteCourse(id);
+        redirectAttributes.addFlashAttribute("success", "Usunięto kurs");
         return "redirect:/courses";
+    }
+
+    private Cookie buildCookie(String name, String value) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60 * 24 * 30);
+        cookie.setHttpOnly(true);
+        return cookie;
     }
 }

@@ -1,6 +1,7 @@
 package com.coursemanager.service;
 
 import com.coursemanager.dto.CourseDto;
+import com.coursemanager.exception.BusinessException;
 import com.coursemanager.model.entity.Course;
 import com.coursemanager.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,23 +14,29 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class CourseService {
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("startDate", "title", "category.name");
+
     private final CourseRepository courseRepository;
     private final CategoryService categoryService;
     private final InstructorService instructorService;
 
-    // Metoda z paginacją i specyfikacją (używana w nowym kontrolerze)
     public Page<Course> findAllCourses(Specification<Course> spec, Pageable pageable) {
         return courseRepository.findAll(spec, pageable);
     }
 
-    // Stara metoda (zachowana dla kompatybilności z ewentualnymi innymi kontrolerami)
+    public List<Course> findAll() {
+        return courseRepository.findAll(Sort.by(Sort.Direction.ASC, "title"));
+    }
+
     public List<Course> findAllCourses(String sortBy, String direction, String categoryName, LocalDate fromDate) {
+        String safeSort = normalizeSortField(sortBy);
         Sort.Direction dir = direction != null && direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Sort sort = Sort.by(dir, sortBy != null ? sortBy : "startDate");
+        Sort sort = Sort.by(dir, safeSort);
 
         Specification<Course> spec = (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
@@ -44,30 +51,40 @@ public class CourseService {
         return courseRepository.findAll(spec, sort);
     }
 
+    public String normalizeSortField(String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            return "startDate";
+        }
+        return ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "startDate";
+    }
+
+    public String normalizeDirection(String direction) {
+        return direction != null && direction.equalsIgnoreCase("desc") ? "desc" : "asc";
+    }
+
     public Course findCourseById(Long id) {
-        return courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
+        return courseRepository.findById(id).orElseThrow(() -> new BusinessException("Nie znaleziono kursu"));
     }
 
-    public void saveCourse(CourseDto courseDto) {
+    public Course saveCourse(CourseDto courseDto) {
         Course course = new Course();
-        course.setTitle(courseDto.getTitle());
-        course.setDescription(courseDto.getDescription());
-        course.setStartDate(courseDto.getStartDate());
-        course.setMaxSeats(courseDto.getMaxSeats());
-        course.setCategory(categoryService.findById(courseDto.getCategoryId()));
-        course.setInstructor(instructorService.findById(courseDto.getInstructorId()));
-        courseRepository.save(course);
+        fillCourse(course, courseDto);
+        return courseRepository.save(course);
     }
 
-    public void updateCourse(Long id, CourseDto courseDto) {
+    public Course updateCourse(Long id, CourseDto courseDto) {
         Course course = findCourseById(id);
-        course.setTitle(courseDto.getTitle());
+        fillCourse(course, courseDto);
+        return courseRepository.save(course);
+    }
+
+    private void fillCourse(Course course, CourseDto courseDto) {
+        course.setTitle(courseDto.getTitle().trim());
         course.setDescription(courseDto.getDescription());
         course.setStartDate(courseDto.getStartDate());
         course.setMaxSeats(courseDto.getMaxSeats());
         course.setCategory(categoryService.findById(courseDto.getCategoryId()));
         course.setInstructor(instructorService.findById(courseDto.getInstructorId()));
-        courseRepository.save(course);
     }
 
     public void deleteCourse(Long id) {
@@ -77,4 +94,9 @@ public class CourseService {
     public long countCourses() {
         return courseRepository.count();
     }
+
+    public long countActiveCourses() {
+        return courseRepository.countByStartDateGreaterThanEqual(LocalDate.now());
+    }
 }
+

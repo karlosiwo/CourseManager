@@ -1,40 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: head"></head>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
 <body>
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container" style="max-width: 700px;">
+<div class="container" style="max-width: 800px;">
     <div class="card shadow rounded-4 border-0">
         <div class="card-header bg-white">
-            <h3 th:text="${courseDto.id == null} ? '➕ Dodaj nowy kurs' : '✏️ Edytuj kurs'"></h3>
+            <h3 th:text="${courseDto.id == null} ? 'Dodaj nowy kurs' : 'Edytuj kurs'"></h3>
         </div>
         <div class="card-body">
-            <form th:action="@{/courses/new}" th:method="post" th:object="${courseDto}" th:if="${courseDto.id == null}">
-                <div class="mb-3"><label class="form-label">Tytuł</label><input th:field="*{title}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Opis</label><textarea th:field="*{description}" class="form-control"></textarea></div>
-                <div class="mb-3"><label class="form-label">Data rozpoczęcia</label><input type="date" th:field="*{startDate}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Maks. miejsc</label><input type="number" th:field="*{maxSeats}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Kategoria</label><select th:field="*{categoryId}" class="form-select"><option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option></select></div>
-                <div class="mb-3"><label class="form-label">Prowadzący</label><select th:field="*{instructorId}" class="form-select"><option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.name}"></option></select></div>
-                <button type="submit" class="btn btn-primary">Zapisz kurs</button>
-                <a href="/courses" class="btn btn-secondary">Anuluj</a>
-            </form>
+            <form th:action="${courseDto.id == null} ? @{/courses/new} : @{/courses/edit/{id}(id=${courseDto.id})}" th:object="${courseDto}" method="post" novalidate>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-            <form th:action="@{/courses/edit/{id}(id=${courseDto.id})}" th:method="post" th:object="${courseDto}" th:if="${courseDto.id != null}">
-                <div class="mb-3"><label class="form-label">Tytuł</label><input th:field="*{title}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Opis</label><textarea th:field="*{description}" class="form-control"></textarea></div>
-                <div class="mb-3"><label class="form-label">Data rozpoczęcia</label><input type="date" th:field="*{startDate}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Maks. miejsc</label><input type="number" th:field="*{maxSeats}" class="form-control"></div>
-                <div class="mb-3"><label class="form-label">Kategoria</label><select th:field="*{categoryId}" class="form-select"><option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option></select></div>
-                <div class="mb-3"><label class="form-label">Prowadzący</label><select th:field="*{instructorId}" class="form-select"><option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.name}"></option></select></div>
-                <button type="submit" class="btn btn-primary">Aktualizuj kurs</button>
-                <a href="/courses" class="btn btn-secondary">Anuluj</a>
+                <div class="mb-3">
+                    <label for="title" class="form-label">Tytuł</label>
+                    <input id="title" th:field="*{title}" class="form-control" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'" required maxlength="100">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Opis</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'" rows="5" maxlength="2000"></textarea>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="startDate" class="form-label">Data rozpoczęcia</label>
+                        <input id="startDate" type="date" th:field="*{startDate}" class="form-control" th:classappend="${#fields.hasErrors('startDate')} ? 'is-invalid'" required>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="maxSeats" class="form-label">Maksymalna liczba miejsc</label>
+                        <input id="maxSeats" type="number" th:field="*{maxSeats}" class="form-control" th:classappend="${#fields.hasErrors('maxSeats')} ? 'is-invalid'" min="1" max="200" required>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('maxSeats')}" th:errors="*{maxSeats}"></div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="categoryId" class="form-label">Kategoria</label>
+                        <select id="categoryId" th:field="*{categoryId}" class="form-select" th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid'" required>
+                            <option value="">-- wybierz --</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                        </select>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="instructorId" class="form-label">Prowadzący</label>
+                        <select id="instructorId" th:field="*{instructorId}" class="form-select" th:classappend="${#fields.hasErrors('instructorId')} ? 'is-invalid'" required>
+                            <option value="">-- wybierz --</option>
+                            <option th:each="ins : ${instructors}" th:value="${ins.id}" th:text="${ins.name}"></option>
+                        </select>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('instructorId')}" th:errors="*{instructorId}"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Zapisz kurs</button>
+                <a th:href="@{/courses}" class="btn btn-secondary">Anuluj</a>
             </form>
         </div>
     </div>
 </div>
-<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -37,8 +37,28 @@ public class EnrollmentController {
             enrollmentService.enrollUser(user.getId(), courseId);
             redirectAttributes.addFlashAttribute("success", "Zapisano na kurs!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Nie udało się zapisać: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/courses";
+    }
+
+    @PostMapping("/cancel/{id}")
+    public String cancel(@PathVariable Long id,
+                         @AuthenticationPrincipal UserDetails userDetails,
+                         RedirectAttributes redirectAttributes) {
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
+        User user = userService.findByUsername(userDetails.getUsername());
+        if (user == null) {
+            return "redirect:/login";
+        }
+        try {
+            enrollmentService.cancelEnrollmentForUser(id, user);
+            redirectAttributes.addFlashAttribute("success", "Anulowano zapis");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/my-enrollments";
     }
 }

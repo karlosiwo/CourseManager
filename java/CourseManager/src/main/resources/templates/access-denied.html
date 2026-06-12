@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+<div class="container">
+    <div class="alert alert-danger">
+        <h1>Brak dostępu</h1>
+        <p>Nie masz uprawnień do tej części aplikacji.</p>
+    </div>
+    <a th:href="@{/courses}" class="btn btn-primary">Wróć do kursów</a>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

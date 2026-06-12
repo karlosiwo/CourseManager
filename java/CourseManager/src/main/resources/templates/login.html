@@ -1,36 +1,29 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Logowanie - CourseManager</title>
     <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/custom.css">
 </head>
 <body class="container mt-5">
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h3>Logowanie</h3>
-            </div>
+            <div class="card-header"><h3>Logowanie</h3></div>
             <div class="card-body">
-                <!-- Komunikaty błędów logowania -->
-                <div th:if="${param.error}" class="alert alert-danger">
-                    Nieprawidłowa nazwa użytkownika lub hasło.
-                </div>
-                <div th:if="${param.logout}" class="alert alert-info">
-                    Zostałeś pomyślnie wylogowany.
-                </div>
-                <div th:if="${param.registered}" class="alert alert-success">
-                    Rejestracja zakończona pomyślnie. Możesz się teraz zalogować.
-                </div>
+                <div th:if="${param.error}" class="alert alert-danger">Nieprawidłowa nazwa użytkownika lub hasło.</div>
+                <div th:if="${param.logout}" class="alert alert-info">Zostałeś pomyślnie wylogowany.</div>
+                <div th:if="${param.registered}" class="alert alert-success">Rejestracja zakończona pomyślnie. Możesz się teraz zalogować.</div>
 
                 <form th:action="@{/login}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="mb-3">
-                        <label class="form-label">Nazwa użytkownika</label>
-                        <input type="text" name="username" class="form-control" required autofocus>
+                        <label for="username" class="form-label">Nazwa użytkownika</label>
+                        <input id="username" type="text" name="username" class="form-control" required autofocus>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Hasło</label>
-                        <input type="password" name="password" class="form-control" required>
+                        <label for="password" class="form-label">Hasło</label>
+                        <input id="password" type="password" name="password" class="form-control" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Zaloguj</button>
                     <a th:href="@{/register}" class="btn btn-link">Nie masz konta? Zarejestruj się</a>

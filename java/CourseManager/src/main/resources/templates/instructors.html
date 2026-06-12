@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Prowadzący</h2>
+        <a th:href="@{/instructors/new}" class="btn btn-primary">Dodaj prowadzącego</a>
+    </div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Akcje</th></tr></thead>
+            <tbody>
+            <tr th:each="instructor : ${instructors}">
+                <td th:text="${instructor.id}"></td>
+                <td th:text="${instructor.firstName}"></td>
+                <td th:text="${instructor.lastName}"></td>
+                <td>
+                    <a th:href="@{/instructors/edit/{id}(id=${instructor.id})}" class="btn btn-sm btn-outline-warning">Edytuj</a>
+                    <form th:action="@{/instructors/delete/{id}(id=${instructor.id})}" method="post" class="d-inline" onsubmit="return confirm('Usunąć prowadzącego?')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Usuń</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

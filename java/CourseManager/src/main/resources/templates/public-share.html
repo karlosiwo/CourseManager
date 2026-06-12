@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+<div class="container">
+    <div class="alert alert-info">To jest publiczny widok kursu z udostępnionego linku. Logowanie nie jest wymagane.</div>
+    <div class="card p-4" th:object="${course}">
+        <h2 th:text="*{title}"></h2>
+        <p><strong>Opis:</strong> <span th:text="*{description}"></span></p>
+        <p><strong>Data rozpoczęcia:</strong> <span th:text="*{startDate}"></span></p>
+        <p><strong>Kategoria:</strong> <span th:text="*{category != null ? category.name : '-'}"></span></p>
+        <p><strong>Prowadzący:</strong> <span th:text="*{instructor != null ? instructor.name : '-'}"></span></p>
+        <p class="text-muted">Udostępnił: <span th:text="${share.owner.username}"></span></p>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
