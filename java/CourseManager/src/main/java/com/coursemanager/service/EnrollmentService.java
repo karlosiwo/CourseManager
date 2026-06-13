@@ -7,6 +7,8 @@ import com.coursemanager.model.entity.Enrollment;
 import com.coursemanager.model.entity.User;
 import com.coursemanager.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,16 @@ public class EnrollmentService {
     }
 
     @Transactional
+    public Enrollment updateEnrollmentStatus(Long enrollmentId, String status) {
+        if (!"AKTYWNY".equals(status) && !"ANULOWANY".equals(status)) {
+            throw new BusinessException("Nieprawidłowy status zapisu");
+        }
+        Enrollment enrollment = findById(enrollmentId);
+        enrollment.setStatus(status);
+        return enrollmentRepository.save(enrollment);
+    }
+
+    @Transactional
     public void cancelEnrollmentForUser(Long enrollmentId, User user) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new BusinessException("Nie znaleziono zapisu"));
@@ -61,8 +73,16 @@ public class EnrollmentService {
         return enrollmentRepository.findByUser(user);
     }
 
+    public Page<Enrollment> getUserEnrollments(User user, Pageable pageable) {
+        return enrollmentRepository.findByUser(user, pageable);
+    }
+
     public List<Enrollment> getCourseParticipants(Course course) {
         return enrollmentRepository.findByCourse(course);
+    }
+
+    public List<Map<String, Object>> findParticipantsByCourseProcedure(Long courseId) {
+        return jdbcTemplate.queryForList("SELECT user_id, username, to_char(enrollment_date, 'DD.MM.YYYY HH24:MI') AS enrollment_date FROM lista_uczestnikow_kursu(?)", courseId);
     }
 
     public Enrollment findById(Long id) {
@@ -72,6 +92,10 @@ public class EnrollmentService {
 
     public List<Enrollment> findAll() {
         return enrollmentRepository.findAll();
+    }
+
+    public Page<Enrollment> findAll(Pageable pageable) {
+        return enrollmentRepository.findAll(pageable);
     }
 
     public EnrollmentDto toDto(Enrollment enrollment) {
@@ -98,6 +122,18 @@ public class EnrollmentService {
             GROUP BY c.id, c.title
             ORDER BY enrollmentCount DESC, c.title ASC
             LIMIT 10
+        """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    public List<Map<String, Object>> findCoursesWithFreeSeats() {
+        String sql = """
+            SELECT c.id as courseId,
+                   c.title,
+                   c.max_seats as maxSeats,
+                   liczba_wolnych_miejsc(c.id) as availableSeats
+            FROM courses c
+            ORDER BY c.id ASC
         """;
         return jdbcTemplate.queryForList(sql);
     }

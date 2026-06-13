@@ -3,20 +3,24 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Kategorie</h2>
         <a th:href="@{/categories/new}" class="btn btn-primary">Dodaj kategorię</a>
     </div>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th>ID</th><th>Nazwa</th><th>Akcje</th></tr></thead>
+            <caption class="visually-hidden">Lista kategorii kursów</caption>
+            <thead><tr><th>ID</th><th>Nazwa</th><th>Opis</th><th>Status</th><th>Utworzono</th><th>Akcje</th></tr></thead>
             <tbody>
-            <tr th:each="category : ${categories}">
+            <tr th:each="category : ${categoryPage.content}">
                 <td th:text="${category.id}"></td>
                 <td th:text="${category.name}"></td>
+                <td th:text="${category.description != null && !#strings.isEmpty(category.description) ? category.description : '-'}"></td>
+                <td><span class="badge" th:classappend="${category.active} ? 'bg-success' : 'bg-secondary'" th:text="${category.active} ? 'Aktywna' : 'Nieaktywna'"></span></td>
+                <td th:text="${category.createdAt != null ? #temporals.format(category.createdAt, 'dd.MM.yyyy HH:mm') : '-'}"></td>
                 <td>
                     <a th:href="@{/categories/edit/{id}(id=${category.id})}" class="btn btn-sm btn-outline-warning">Edytuj</a>
                     <form th:action="@{/categories/delete/{id}(id=${category.id})}" method="post" class="d-inline" onsubmit="return confirm('Usunąć kategorię?')">
@@ -25,9 +29,24 @@
                     </form>
                 </td>
             </tr>
+            <tr th:if="${categoryPage.totalElements == 0}"><td colspan="6" class="text-center text-muted">Brak kategorii.</td></tr>
             </tbody>
         </table>
     </div>
+
+    <nav th:if="${categoryPage.totalPages > 1}" aria-label="Stronicowanie kategorii">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${categoryPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/categories(page=0, size=${categoryPage.size})}" aria-label="Pierwsza strona">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, categoryPage.totalPages - 1)}" th:classappend="${i == categoryPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/categories(page=${i}, size=${categoryPage.size})}" th:text="${i + 1}" th:attr="aria-label=${'Strona ' + (i + 1)}"></a>
+            </li>
+            <li class="page-item" th:classappend="${categoryPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/categories(page=${categoryPage.totalPages - 1}, size=${categoryPage.size})}" aria-label="Ostatnia strona">»</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>

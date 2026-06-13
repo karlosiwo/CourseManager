@@ -3,10 +3,10 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <h2>Udostępnianie kursów</h2>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
     <div class="row g-4 mb-4">
         <div class="col-lg-6">

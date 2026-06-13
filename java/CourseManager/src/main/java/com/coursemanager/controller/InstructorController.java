@@ -5,6 +5,9 @@ import com.coursemanager.exception.BusinessException;
 import com.coursemanager.service.InstructorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,8 +21,11 @@ public class InstructorController {
     private final InstructorService instructorService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("instructors", instructorService.findAll());
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "10") int size,
+                       Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        model.addAttribute("instructorPage", instructorService.findAll(pageable));
         return "instructors";
     }
 

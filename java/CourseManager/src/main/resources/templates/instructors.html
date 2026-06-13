@@ -3,21 +3,24 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Prowadzący</h2>
         <a th:href="@{/instructors/new}" class="btn btn-primary">Dodaj prowadzącego</a>
     </div>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Akcje</th></tr></thead>
+            <caption class="visually-hidden">Lista prowadzących</caption>
+            <thead><tr><th>ID</th><th>Imię</th><th>Nazwisko</th><th>Email</th><th>Specjalizacja</th><th>Akcje</th></tr></thead>
             <tbody>
-            <tr th:each="instructor : ${instructors}">
+            <tr th:each="instructor : ${instructorPage.content}">
                 <td th:text="${instructor.id}"></td>
                 <td th:text="${instructor.firstName}"></td>
                 <td th:text="${instructor.lastName}"></td>
+                <td><a th:href="${'mailto:' + instructor.email}" th:text="${instructor.email}"></a></td>
+                <td th:text="${instructor.specialization}"></td>
                 <td>
                     <a th:href="@{/instructors/edit/{id}(id=${instructor.id})}" class="btn btn-sm btn-outline-warning">Edytuj</a>
                     <form th:action="@{/instructors/delete/{id}(id=${instructor.id})}" method="post" class="d-inline" onsubmit="return confirm('Usunąć prowadzącego?')">
@@ -26,9 +29,24 @@
                     </form>
                 </td>
             </tr>
+            <tr th:if="${instructorPage.totalElements == 0}"><td colspan="6" class="text-center text-muted">Brak prowadzących.</td></tr>
             </tbody>
         </table>
     </div>
+
+    <nav th:if="${instructorPage.totalPages > 1}" aria-label="Stronicowanie prowadzących">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${instructorPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/instructors(page=0, size=${instructorPage.size})}" aria-label="Pierwsza strona">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, instructorPage.totalPages - 1)}" th:classappend="${i == instructorPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/instructors(page=${i}, size=${instructorPage.size})}" th:text="${i + 1}" th:attr="aria-label=${'Strona ' + (i + 1)}"></a>
+            </li>
+            <li class="page-item" th:classappend="${instructorPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/instructors(page=${instructorPage.totalPages - 1}, size=${instructorPage.size})}" aria-label="Ostatnia strona">»</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>

@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container" style="max-width: 700px;">
+<div id="main-content" tabindex="-1" class="container" style="max-width: 700px;">
     <div class="card shadow rounded-4 border-0">
         <div class="card-header bg-white">
             <h3 th:text="${categoryDto.id == null} ? 'Dodaj kategorię' : 'Edytuj kategorię'"></h3>
@@ -13,8 +13,19 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <div class="mb-3">
                     <label for="name" class="form-label">Nazwa</label>
-                    <input id="name" type="text" th:field="*{name}" class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required minlength="3" maxlength="50">
+                    <input id="name" type="text" th:field="*{name}" class="form-control" th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required minlength="3" maxlength="50" th:data-original="${categoryDto.name}" th:data-current-id="${categoryDto.id}">
+                    <div id="categoryNameHelp" class="form-text">Nazwa zostanie sprawdzona przez REST API.</div>
                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    <div id="categoryNameFeedback" class="invalid-feedback d-block" aria-live="polite"></div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Opis</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'" rows="4" maxlength="500"></textarea>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input id="active" type="checkbox" th:field="*{active}" class="form-check-input">
+                    <label for="active" class="form-check-label">Kategoria aktywna</label>
                 </div>
                 <button type="submit" class="btn btn-primary">Zapisz</button>
                 <a th:href="@{/categories}" class="btn btn-secondary">Anuluj</a>
@@ -23,6 +34,46 @@
     </div>
 </div>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+<script>
+    $(function () {
+        const input = $('#name');
+        const feedback = $('#categoryNameFeedback');
+        const original = (input.data('original') || '').toString().trim().toLowerCase();
+        const currentId = input.data('current-id');
+        let timer;
+
+        input.on('input blur', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                const value = input.val().trim();
+                if (value.length < 3) {
+                    feedback.text('Nazwa musi mieć co najmniej 3 znaki.');
+                    input.addClass('is-invalid').removeClass('is-valid');
+                    return;
+                }
+                if (value.toLowerCase() === original) {
+                    feedback.text('');
+                    input.removeClass('is-invalid').addClass('is-valid');
+                    return;
+                }
+                $.get('/api/categories/validate', { name: value, currentId: currentId })
+                    .done(function (data) {
+                        if (data.available) {
+                            feedback.text('');
+                            input.removeClass('is-invalid').addClass('is-valid');
+                        } else {
+                            feedback.text('Kategoria o takiej nazwie już istnieje.');
+                            input.addClass('is-invalid').removeClass('is-valid');
+                        }
+                    })
+                    .fail(function () {
+                        feedback.text('Nie udało się sprawdzić nazwy kategorii.');
+                    });
+            }, 300);
+        });
+    });
+</script>
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

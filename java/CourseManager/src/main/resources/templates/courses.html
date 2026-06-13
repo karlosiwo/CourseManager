@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Lista kursów</h2>
         <div sec:authorize="hasAnyRole('ADMIN','FULL_USER')">
@@ -12,8 +12,8 @@
         </div>
     </div>
 
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -32,6 +32,7 @@
                 <div class="col-md-2">
                     <label for="sort" class="form-label">Sortuj</label>
                     <select id="sort" name="sort" class="form-select">
+                        <option value="id" th:selected="${currentSort == 'id'}">ID</option>
                         <option value="startDate" th:selected="${currentSort == 'startDate'}">Data</option>
                         <option value="title" th:selected="${currentSort == 'title'}">Tytuł</option>
                         <option value="category.name" th:selected="${currentSort == 'category.name'}">Kategoria</option>

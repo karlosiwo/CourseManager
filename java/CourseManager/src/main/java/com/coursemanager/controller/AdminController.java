@@ -4,6 +4,9 @@ import com.coursemanager.service.UserService;
 import com.coursemanager.service.CourseService;
 import com.coursemanager.service.EnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,23 +28,19 @@ public class AdminController {
     @Autowired
     private EnrollmentService enrollmentService;
 
-    /**
-     * Lista wszystkich użytkowników (dla administratora)
-     */
     @GetMapping("/users")
-    public String listUsers(Model model) {
-        model.addAttribute("users", userService.findAllUsers());
+    public String listUsers(@RequestParam(defaultValue = "0") int page,
+                            @RequestParam(defaultValue = "10") int size,
+                            Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "username"));
+        model.addAttribute("userPage", userService.findAllUsers(pageable));
         return "admin/users";
     }
 
-    /**
-     * Zmiana roli użytkownika
-     */
     @GetMapping("/users/change-role/{id}")
     public String changeRoleForm(@PathVariable Long id, Model model) {
-        var user = userService.findUserById(id); // zakładając, że masz taką metodę w UserService
+        var user = userService.findUserById(id);
         model.addAttribute("user", user);
-        // przekaż dostępne role
         model.addAttribute("roles", new String[]{"ROLE_LIMITED_USER", "ROLE_FULL_USER", "ROLE_ADMIN"});
         return "admin/change-role";
     }
@@ -52,12 +51,8 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-    /**
-     * Panel raportów – widok główny (NAPRAWA BŁĘDU)
-     */
     @GetMapping("/reports")
     public String reportsDashboard(Model model) {
-        // Opcjonalnie dodaj statystyki ogólne
         long userCount = userService.countUsers();
         long courseCount = courseService.countCourses();
         long enrollmentCount = enrollmentService.countEnrollments();
@@ -69,14 +64,26 @@ public class AdminController {
         return "admin/reports";
     }
 
-    /**
-     * Przykładowy raport – najpopularniejsze kursy
-     * (już może istnieć, dodaję dla kompletności)
-     */
     @GetMapping("/reports/popular-courses")
     public String popularCourses(Model model) {
-        // Tu możesz pobrać dane z serwisu
         model.addAttribute("popularCourses", enrollmentService.findMostPopularCourses());
         return "admin/popular-courses";
+    }
+
+    @GetMapping("/reports/free-seats")
+    public String freeSeats(Model model) {
+        model.addAttribute("freeSeats", enrollmentService.findCoursesWithFreeSeats());
+        return "admin/free-seats";
+    }
+
+    @GetMapping("/reports/course-participants")
+    public String courseParticipants(@RequestParam(required = false) Long courseId, Model model) {
+        model.addAttribute("courses", courseService.findAll());
+        model.addAttribute("selectedCourseId", courseId);
+        if (courseId != null) {
+            model.addAttribute("selectedCourse", courseService.findCourseById(courseId));
+            model.addAttribute("participants", enrollmentService.findParticipantsByCourseProcedure(courseId));
+        }
+        return "admin/course-participants";
     }
 }

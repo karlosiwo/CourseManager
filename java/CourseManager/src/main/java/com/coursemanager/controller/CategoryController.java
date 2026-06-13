@@ -5,6 +5,9 @@ import com.coursemanager.exception.BusinessException;
 import com.coursemanager.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,14 +21,19 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("categories", categoryService.findAll());
+    public String list(@RequestParam(defaultValue = "0") int page,
+                       @RequestParam(defaultValue = "10") int size,
+                       Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
+        model.addAttribute("categoryPage", categoryService.findAll(pageable));
         return "categories";
     }
 
     @GetMapping("/new")
     public String createForm(Model model) {
-        model.addAttribute("categoryDto", new CategoryDto());
+        CategoryDto dto = new CategoryDto();
+        dto.setActive(true);
+        model.addAttribute("categoryDto", dto);
         return "category-form";
     }
 

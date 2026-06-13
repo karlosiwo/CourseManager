@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="pl" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejestracja - CourseManager</title>
     <link rel="stylesheet" href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
 </head>
-<body class="container mt-5">
+<body id="main-content" tabindex="-1" class="container mt-5">
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
             <div class="card-header"><h3>Rejestracja</h3></div>
             <div class="card-body">
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
                 <form th:action="@{/register}" th:object="${user}" method="post" novalidate>
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

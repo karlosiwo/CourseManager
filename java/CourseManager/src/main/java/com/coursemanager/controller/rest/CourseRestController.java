@@ -27,7 +27,7 @@ public class CourseRestController {
     @GetMapping
     public Page<CourseDto> list(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "20") int size,
-                                @RequestParam(defaultValue = "startDate") String sort,
+                                @RequestParam(defaultValue = "id") String sort,
                                 @RequestParam(defaultValue = "asc") String direction) {
         String safeSort = courseService.normalizeSortField(sort);
         String safeDirection = courseService.normalizeDirection(direction);

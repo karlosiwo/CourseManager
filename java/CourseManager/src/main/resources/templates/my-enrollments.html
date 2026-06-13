@@ -3,15 +3,16 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <h2>Moje zapisy</h2>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <div class="table-responsive">
         <table class="table align-middle">
+            <caption class="visually-hidden">Lista moich zapisów na kursy</caption>
             <thead><tr><th>Kurs</th><th>Data rozpoczęcia</th><th>Status</th><th>Akcja</th></tr></thead>
             <tbody>
-            <tr th:each="e : ${enrollments}">
+            <tr th:each="e : ${enrollmentPage.content}">
                 <td><a th:href="@{/courses/{id}(id=${e.course.id})}" th:text="${e.course.title}"></a></td>
                 <td th:text="${e.course.startDate}"></td>
                 <td><span class="badge" th:classappend="${e.status == 'AKTYWNY'} ? 'bg-success' : 'bg-secondary'" th:text="${e.status}"></span></td>
@@ -22,10 +23,24 @@
                     </form>
                 </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(enrollments)}"><td colspan="4" class="text-center text-muted">Nie masz jeszcze zapisów.</td></tr>
+            <tr th:if="${enrollmentPage.totalElements == 0}"><td colspan="4" class="text-center text-muted">Nie masz jeszcze zapisów.</td></tr>
             </tbody>
         </table>
     </div>
+
+    <nav th:if="${enrollmentPage.totalPages > 1}" aria-label="Stronicowanie zapisów">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${enrollmentPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/my-enrollments(page=0, size=${enrollmentPage.size})}" aria-label="Pierwsza strona">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, enrollmentPage.totalPages - 1)}" th:classappend="${i == enrollmentPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/my-enrollments(page=${i}, size=${enrollmentPage.size})}" th:text="${i + 1}" th:attr="aria-label=${'Strona ' + (i + 1)}"></a>
+            </li>
+            <li class="page-item" th:classappend="${enrollmentPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/my-enrollments(page=${enrollmentPage.totalPages - 1}, size=${enrollmentPage.size})}" aria-label="Ostatnia strona">»</a>
+            </li>
+        </ul>
+    </nav>
     <a th:href="@{/courses}" class="btn btn-primary">Przeglądaj kursy</a>
 </div>
 <div th:replace="~{fragments/footer :: footer}"></div>

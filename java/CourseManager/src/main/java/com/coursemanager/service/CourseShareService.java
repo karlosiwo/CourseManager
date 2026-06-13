@@ -23,6 +23,15 @@ public class CourseShareService {
     private final UserService userService;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    public List<CourseShare> findAll() {
+        return courseShareRepository.findAll();
+    }
+
+    public CourseShare findById(Long id) {
+        return courseShareRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Nie znaleziono udostępnienia"));
+    }
+
     public List<CourseShare> findCreatedBy(User owner) {
         return courseShareRepository.findByOwnerOrderByCreatedAtDesc(owner);
     }
@@ -72,8 +81,7 @@ public class CourseShareService {
 
     @Transactional
     public void deactivate(Long shareId, User currentUser) {
-        CourseShare share = courseShareRepository.findById(shareId)
-                .orElseThrow(() -> new BusinessException("Nie znaleziono udostępnienia"));
+        CourseShare share = findById(shareId);
         boolean isOwner = share.getOwner() != null && share.getOwner().getId().equals(currentUser.getId());
         boolean isAdmin = currentUser.getRole() != null && currentUser.getRole().equals("ROLE_ADMIN");
         if (!isOwner && !isAdmin) {

@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <div class="card shadow-sm border-0 rounded-4 p-4" th:object="${course}">
         <div class="d-flex justify-content-between gap-3 flex-wrap">
             <h2 th:text="*{title}"></h2>

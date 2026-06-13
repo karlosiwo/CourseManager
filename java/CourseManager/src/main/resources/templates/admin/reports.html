@@ -3,14 +3,18 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <h2>Raporty i statystyki</h2>
     <div class="card mt-3">
         <div class="card-body">
             <p>Liczba użytkowników: <strong th:text="${userCount}"></strong></p>
             <p>Liczba kursów: <strong th:text="${courseCount}"></strong></p>
             <p>Liczba zapisów: <strong th:text="${enrollmentCount}"></strong></p>
-            <a th:href="@{/admin/reports/popular-courses}" class="btn btn-outline-primary">Pokaż najpopularniejsze kursy</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/admin/reports/popular-courses}" class="btn btn-outline-primary">Pokaż najpopularniejsze kursy</a>
+                <a th:href="@{/admin/reports/free-seats}" class="btn btn-outline-primary">Raport wolnych miejsc</a>
+                <a th:href="@{/admin/reports/course-participants}" class="btn btn-outline-primary">Uczestnicy kursu</a>
+            </div>
         </div>
     </div>
 </div>

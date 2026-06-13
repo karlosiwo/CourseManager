@@ -19,7 +19,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class CourseService {
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("startDate", "title", "category.name");
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "startDate", "title", "category.name");
 
     private final CourseRepository courseRepository;
     private final CategoryService categoryService;
@@ -53,9 +53,9 @@ public class CourseService {
 
     public String normalizeSortField(String sortBy) {
         if (sortBy == null || sortBy.isBlank()) {
-            return "startDate";
+            return "id";
         }
-        return ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "startDate";
+        return ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : "id";
     }
 
     public String normalizeDirection(String direction) {

@@ -4,7 +4,7 @@
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
 
-<div class="container" style="max-width: 800px;">
+<div id="main-content" tabindex="-1" class="container" style="max-width: 800px;">
     <div class="card shadow rounded-4 border-0">
         <div class="card-header bg-white">
             <h3 th:text="${courseDto.id == null} ? 'Dodaj nowy kurs' : 'Edytuj kurs'"></h3>

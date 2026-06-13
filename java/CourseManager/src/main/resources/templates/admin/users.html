@@ -3,22 +3,38 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <h2>Użytkownicy systemu</h2>
     <div class="table-responsive">
         <table class="table align-middle">
+            <caption class="visually-hidden">Lista użytkowników systemu</caption>
             <thead><tr><th>ID</th><th>Login</th><th>Email</th><th>Rola</th><th>Akcja</th></tr></thead>
             <tbody>
-            <tr th:each="u : ${users}">
+            <tr th:each="u : ${userPage.content}">
                 <td th:text="${u.id}"></td>
                 <td th:text="${u.username}"></td>
                 <td th:text="${u.email}"></td>
                 <td th:text="${u.role}"></td>
                 <td><a th:href="@{/admin/users/change-role/{id}(id=${u.id})}" class="btn btn-sm btn-outline-secondary">Zmień rolę</a></td>
             </tr>
+            <tr th:if="${userPage.totalElements == 0}"><td colspan="5" class="text-center text-muted">Brak użytkowników.</td></tr>
             </tbody>
         </table>
     </div>
+
+    <nav th:if="${userPage.totalPages > 1}" aria-label="Stronicowanie użytkowników">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${userPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=0, size=${userPage.size})}" aria-label="Pierwsza strona">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, userPage.totalPages - 1)}" th:classappend="${i == userPage.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/users(page=${i}, size=${userPage.size})}" th:text="${i + 1}" th:attr="aria-label=${'Strona ' + (i + 1)}"></a>
+            </li>
+            <li class="page-item" th:classappend="${userPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${userPage.totalPages - 1}, size=${userPage.size})}" aria-label="Ostatnia strona">»</a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>

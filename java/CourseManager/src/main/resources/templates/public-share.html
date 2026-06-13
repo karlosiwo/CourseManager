@@ -3,7 +3,7 @@
 <head th:replace="~{fragments/header :: head}"></head>
 <body>
 <div th:replace="~{fragments/header :: navbar}"></div>
-<div class="container">
+<div id="main-content" tabindex="-1" class="container">
     <div class="alert alert-info">To jest publiczny widok kursu z udostępnionego linku. Logowanie nie jest wymagane.</div>
     <div class="card p-4" th:object="${course}">
         <h2 th:text="*{title}"></h2>

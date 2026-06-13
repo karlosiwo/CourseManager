@@ -16,7 +16,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             FROM categories c
             LEFT JOIN courses co ON co.category_id = c.id
             LEFT JOIN enrollments e ON e.course_id = co.id AND e.status = 'AKTYWNY'
-            GROUP BY c.id, c.name
+            GROUP BY c.id, c.name, c.description, c.active, c.created_at
             ORDER BY COUNT(e.id) DESC, c.name ASC
             """, nativeQuery = true)
     List<Category> findAllOrderByPopularity();

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+<div th:replace="~{fragments/header :: navbar}"></div>
+<div id="main-content" tabindex="-1" class="container">
+    <h2>Uczestnicy kursu</h2>
+    <form method="get" th:action="@{/admin/reports/course-participants}" class="row g-3 align-items-end mb-4" aria-label="Wybór kursu do raportu uczestników">
+        <div class="col-md-8">
+            <label for="courseId" class="form-label">Kurs</label>
+            <select id="courseId" name="courseId" class="form-select" required>
+                <option value="">-- wybierz kurs --</option>
+                <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.title}" th:selected="${selectedCourseId == course.id}"></option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Pokaż uczestników</button>
+        </div>
+    </form>
+
+    <div th:if="${selectedCourse != null}">
+        <h3 class="h5" th:text="${'Kurs: ' + selectedCourse.title}"></h3>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <caption class="visually-hidden">Lista uczestników wybranego kursu</caption>
+                <thead><tr><th>ID użytkownika</th><th>Login</th><th>Data zapisu</th></tr></thead>
+                <tbody>
+                <tr th:each="row : ${participants}">
+                    <td th:text="${row['user_id']}"></td>
+                    <td th:text="${row['username']}"></td>
+                    <td th:text="${row['enrollment_date']}"></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(participants)}"><td colspan="3" class="text-center text-muted">Brak aktywnych uczestników.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a th:href="@{/admin/reports}" class="btn btn-secondary">Powrót</a>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

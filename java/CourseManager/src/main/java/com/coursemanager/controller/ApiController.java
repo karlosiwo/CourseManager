@@ -20,9 +20,10 @@ public class ApiController {
     private EnrollmentService enrollmentService;
 
     @GetMapping("/categories/validate")
-    public ResponseEntity<?> validateCategory(@RequestParam String name) {
-        boolean exists = categoryService.existsByName(name);
-        return ResponseEntity.ok(Map.of("available", !exists));
+    public ResponseEntity<?> validateCategory(@RequestParam String name,
+                                              @RequestParam(required = false) Long currentId) {
+        boolean available = categoryService.isNameAvailable(name, currentId);
+        return ResponseEntity.ok(Map.of("available", available));
     }
 
     @GetMapping("/courses/{id}/availability")

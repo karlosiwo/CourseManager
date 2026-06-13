@@ -1,9 +1,12 @@
 package com.coursemanager.service;
 
 import com.coursemanager.dto.UserRegistrationDto;
+import com.coursemanager.exception.BusinessException;
 import com.coursemanager.model.entity.User;
 import com.coursemanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,9 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
+
+    private static final Set<String> ALLOWED_ROLES = Set.of("ROLE_LIMITED_USER", "ROLE_FULL_USER", "ROLE_ADMIN");
 
     private final UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
@@ -40,13 +46,18 @@ public class UserService implements UserDetailsService {
     }
 
     public void registerNewUser(UserRegistrationDto registrationDto) {
-        if (userRepository.existsByUsername(registrationDto.getUsername())) {
-            throw new RuntimeException("Username already exists");
+        String username = registrationDto.getUsername().trim().toLowerCase();
+        String email = registrationDto.getEmail().trim().toLowerCase();
+        if (userRepository.existsByUsername(username)) {
+            throw new BusinessException("Username already exists");
+        }
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new BusinessException("Email already exists");
         }
         User user = new User();
-        user.setUsername(registrationDto.getUsername());
+        user.setUsername(username);
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
-        user.setEmail(registrationDto.getEmail());
+        user.setEmail(email);
         user.setRole("ROLE_LIMITED_USER");
         userRepository.save(user);
     }
@@ -55,12 +66,19 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
+    public Page<User> findAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
     public User findUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new BusinessException("User not found with id: " + id));
     }
 
     public void changeUserRole(Long userId, String newRole) {
+        if (!ALLOWED_ROLES.contains(newRole)) {
+            throw new BusinessException("Nieprawidłowa rola użytkownika");
+        }
         User user = findUserById(userId);
         user.setRole(newRole);
         userRepository.save(user);
